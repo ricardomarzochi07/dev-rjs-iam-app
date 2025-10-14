@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useRouter } from 'next/router';
 import { StatusCodes } from 'http-status-codes';
 import styles from '@/components/Signup/signup.module.css';
-import Image from 'next/image';
 import stadium from "@/assets/images/chat_estadio1.png";
 import fan from "@/assets/images/cavas_torcedor03.png";
 import ReCAPTCHA from "react-google-recaptcha";
@@ -10,7 +9,7 @@ import SignupForm from "@/components/Signup/signup_form";
 import { TransactionService } from "@/services/transaction_service";
 import { UserType } from "@/types/signup/user_type";
 import { signupHook } from "@/hooks/signup_hook";
-import { useTranslation} from "react-i18next"
+import { useLanguage } from 'buddybets-i18n-lib';
 
 const initialFormState: UserType = {
   firstName: '',
@@ -32,7 +31,7 @@ interface SignupInitResponse {
 
 export default function SignupPage() {
   const navigate = useRouter();
-  const { t } = useTranslation();
+  const { t, currentLanguage, changeLanguage } = useLanguage();
 
   const {
     form,
@@ -165,7 +164,7 @@ export default function SignupPage() {
       
 
         <form onSubmit={handleSubmit}>
-          <h3>User Registration</h3>
+          <h3>{t("signup.title")} </h3>
   
           {errors.registerError && 
           <div className={styles.errorMessage}>{errors.registerError}</div>}

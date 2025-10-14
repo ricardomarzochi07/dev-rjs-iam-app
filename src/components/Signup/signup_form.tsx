@@ -1,6 +1,6 @@
 import styles from "./signup.module.css"; // Reutiliza tu CSS existente
-import { useTranslation} from "react-i18next"
 import { FaLock, FaLockOpen } from "react-icons/fa"; // candado cerrado / abierto
+import { useLanguage } from "buddybets-i18n-lib"
 
 type Props = {
   form: any;
@@ -23,7 +23,7 @@ export default function SignupForm({
   showPassword,
   setShowPassword,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, currentLanguage, changeLanguage } = useLanguage();
   return (
     <>
       <div className={styles.formGroup}>

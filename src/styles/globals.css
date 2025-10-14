@@ -1,12 +1,16 @@
 /* --- Fuentes globales --- */
 @font-face {
-  font-family: "Poppins-Regular";
-  src: url("/fonts/poppins/Poppins-Regular.ttf");
+  font-family: 'Poppins-Regular';
+  src: url('/fonts/Poppins-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
 }
 
 @font-face {
-  font-family: "Poppins-SemiBold";
-  src: url("/fonts/poppins/Poppins-SemiBold.ttf");
+  font-family: 'Poppins-SemiBold';
+  src: url('/fonts/Poppins-SemiBold.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
 }
 
 * {

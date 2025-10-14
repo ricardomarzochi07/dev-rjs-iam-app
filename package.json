@@ -10,7 +10,8 @@
   "dependencies": {
     "@module-federation/nextjs-mf": "8.8.34",
     "buddybets-http-lib": "^1.0.0",
-    "buddybets-i18n-lib": "^1.0.1",
+    "buddybets-i18n-lib": "^1.0.7",
+    "cookie": "^1.0.2",
     "http-status-codes": "^2.3.0",
     "install": "^0.13.0",
     "js-cookie": "^3.0.5",
