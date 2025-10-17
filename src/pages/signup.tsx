@@ -1,28 +1,32 @@
 import { useEffect, useState } from "react";
-import { useRouter } from 'next/router';
-import { StatusCodes } from 'http-status-codes';
-import styles from '@/components/Signup/signup.module.css';
+import { useRouter } from "next/router";
+import { StatusCodes } from "http-status-codes";
+import ReCAPTCHA from "react-google-recaptcha";
+
+import styles from "@/components/Signup/signup.module.css";
 import stadium from "@/assets/images/chat_estadio1.png";
 import fan from "@/assets/images/cavas_torcedor03.png";
-import ReCAPTCHA from "react-google-recaptcha";
+
 import SignupForm from "@/components/Signup/signup_form";
 import { TransactionService } from "@/services/transaction_service";
 import { UserType } from "@/types/signup/user_type";
 import { signupHook } from "@/hooks/signup_hook";
-import { useLanguage } from 'buddybets-i18n-lib';
+import { useLanguage } from "buddybets-i18n-lib";
 
+// 🔹 Estado inicial del formulario
 const initialFormState: UserType = {
-  firstName: '',
-  lastName: '',
-  gender: '',
-  email: '',
-  username: '',
-  password: '',
-  captcha_token: '',
-  jwt_nonce: '',
-  jwt_csrf: '',
+  firstName: "",
+  lastName: "",
+  gender: "",
+  email: "",
+  username: "",
+  password: "",
+  captcha_token: "",
+  jwt_nonce: "",
+  jwt_csrf: "",
 };
 
+// 🔹 Tipo para respuesta de inicialización
 interface SignupInitResponse {
   jwt_nonce: string;
   captcha_token: string;
@@ -30,8 +34,8 @@ interface SignupInitResponse {
 }
 
 export default function SignupPage() {
-  const navigate = useRouter();
-  const { t, currentLanguage, changeLanguage } = useLanguage();
+  const router = useRouter();
+  const { t } = useLanguage();
 
   const {
     form,
@@ -43,69 +47,54 @@ export default function SignupPage() {
     errors,
     setErrors,
     validate,
-  } = signupHook(initialFormState);
+  } = signupHook(initialFormState, t);
 
   const [signupInit, setSignupInit] = useState<SignupInitResponse | null>(null);
   const [loadingInit, setLoadingInit] = useState(true);
   const [errorInit, setErrorInit] = useState<string | null>(null);
-
-  const [showPassword, setShowPassword] = useState(false);
   const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
-  /** Obtener tokens iniciales */
+  /** 🧩 Inicialización del registro */
   useEffect(() => {
     const fetchSignupInit = async () => {
       setLoadingInit(true);
       try {
         const response = await TransactionService.getSignupInit();
         if (!response.success) {
-          setErrorInit(response.message ?? "Error de inicialización");
+          setErrorInit(response.message ?? t("error.initFailed"));
           return;
         }
 
         const initData = response.data;
         setSignupInit(initData);
 
-        // Actualizar form con tokens jwt
-        // Como el hook no expone setForm, vamos a agregarlo (o actualizarlo aquí)
-        // Por simplicidad, asumimos que useSignupForm expone setForm:
-        // setForm(prev => ({
-        //   ...prev,
-        //   jwt_nonce: initData.jwt_nonce ?? '',
-        //   jwt_csrf: initData.jwt_csrf ?? '',
-        // }));
-
-        // Si no quieres exponer setForm, se puede hacer en el hook con un método aparte.
-        setForm(f => ({
-          ...f,
-          jwt_nonce: initData.jwt_nonce ?? '',
-          jwt_csrf: initData.jwt_csrf ?? '',
+        // ✅ Añadimos los tokens al form
+        setForm(prev => ({
+          ...prev,
+          jwt_nonce: initData.jwt_nonce ?? "",
+          jwt_csrf: initData.jwt_csrf ?? "",
         }));
-
       } catch (err: any) {
-        setErrorInit(err.message ?? "Error al inicializar el registro");
+        setErrorInit(err.message ?? t("error.initFailed"));
       } finally {
         setLoadingInit(false);
       }
     };
 
     fetchSignupInit();
-  }, []);
+  }, [setForm, t]);
 
-  // ** Necesitamos exponer `setForm` en el hook para hacer esto **
-  // Agrega `setForm` al hook exportado si no lo tienes.
-
-  // handleSubmit
+  /** 🧩 Envío del formulario */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Limpiamos errores de captcha para que se refresque si hay
     setErrors(prev => ({ ...prev, captchaError: null, registerError: null }));
 
+    // ✅ Validaciones
     if (!validate()) return;
 
     if (!form.captcha_token) {
-      setErrors(prev => ({ ...prev, captchaError: "Debe completar el captcha" }));
+      setErrors(prev => ({ ...prev, captchaError: t("validation.captchaRequired") }));
       return;
     }
 
@@ -116,59 +105,70 @@ export default function SignupPage() {
 
       if (!response.success) {
         if (response.code === StatusCodes.CONFLICT) {
-          setErrors(prev => ({ ...prev, usernameError: response.message ?? null }));
+          setErrors(prev => ({ ...prev, usernameError: response.message ?? "" }));
           return;
         }
 
         if (response.code === StatusCodes.UNAUTHORIZED || response.code >= 500) {
-          setErrors(prev => ({ ...prev, registerError: response.message ?? null }));
+          setErrors(prev => ({ ...prev, registerError: response.message ?? "" }));
           return;
         }
       }
 
+      // ✅ Registro exitoso → redirigir
       if (response.success && response.code === 200) {
-        navigate.push('/login');
+        router.push("/login");
       }
     } catch (err: any) {
-      alert(err.message || "Error al registrar el usuario");
+      setErrors(prev => ({
+        ...prev,
+        registerError: err.message || t("error.generic"),
+      }));
     } finally {
       setLoadingSubmit(false);
     }
   };
 
+  /** 🌀 Estado: cargando inicialización */
   if (loadingInit) {
     return (
       <div className={styles.overlay}>
         <div className={styles.spinner}></div>
-        <p>Load Page ...</p>
+        <p>{t("status.loadingPage")}</p>
       </div>
     );
   }
 
+  /** ❌ Estado: error al inicializar */
   if (errorInit) {
     return (
       <div className={styles.errorWrapper}>
-        <h2>❌ Error initializing the page</h2>
+        <h2>❌ {t("status.stInitialization")}</h2>
         <p>{errorInit}</p>
-        <button onClick={() => window.location.reload()}>Retry</button>
+        <button onClick={() => window.location.reload()}>
+          {t("actions.retry")}
+        </button>
       </div>
     );
   }
 
+  /** 🧩 Render principal */
   return (
-    <div className={styles.wrapper} style={{ backgroundImage: `url(${stadium.src})` }}>
+    <div
+      className={styles.wrapper}
+      style={{ backgroundImage: `url(${stadium.src})` }}
+    >
       <div className={styles.inner}>
         <div className={styles.imageHolder}>
           <img src={fan.src} alt="Fan" className={styles.image} />
         </div>
-      
 
         <form onSubmit={handleSubmit}>
-          <h3>{t("signup.title")} </h3>
-  
-          {errors.registerError && 
-          <div className={styles.errorMessage}>{errors.registerError}</div>}
-          <br></br>
+          <h3>{t("signup.title")}</h3>
+
+          {errors.registerError && (
+            <div className={styles.errorMessage}>{errors.registerError}</div>
+          )}
 
           <SignupForm
             form={form}
@@ -185,11 +185,13 @@ export default function SignupPage() {
             <div className={styles.recaptchaWrapper}>
               <ReCAPTCHA
                 sitekey={signupInit.captcha_token}
-                onChange={(token) => {
-                  setForm(f => ({ ...f, captcha_token: token ?? '' }));
+                onChange={token => {
+                  setForm(prev => ({ ...prev, captcha_token: token ?? "" }));
                 }}
               />
-              {errors.captchaError && <div className={styles.errorMessage}>{errors.captchaError}</div>}
+              {errors.captchaError && (
+                <div className={styles.errorMessage}>{errors.captchaError}</div>
+              )}
             </div>
           )}
 
@@ -200,7 +202,8 @@ export default function SignupPage() {
           >
             {loadingSubmit ? (
               <>
-                <i className="zmdi zmdi-spinner zmdi-hc-spin"></i> Registrando...
+                <i className="zmdi zmdi-spinner zmdi-hc-spin"></i>{" "}
+                {t("status.stSignup")}
               </>
             ) : (
               <>
@@ -214,7 +217,7 @@ export default function SignupPage() {
       {loadingSubmit && (
         <div className={styles.overlay}>
           <div className={styles.spinner}></div>
-          <p>{t("signup.register")} </p>
+          <p>{t("signup.register")}...</p>
         </div>
       )}
     </div>

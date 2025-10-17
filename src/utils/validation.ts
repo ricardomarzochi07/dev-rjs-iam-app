@@ -1,72 +1,84 @@
-// src/utils/validation.ts
+import { UserType } from "@/types/signup/user_type";
 
-import { UserType } from '@/types/signup/user_type';
-
-export interface PasswordValidationResult {
+export interface ValidationResult {
   valid: boolean;
-  message: string;
+  messages?: Record<string, string>;
 }
 
-// ✅ Validación de email
-export const validateEmail = (email: string): boolean => {
+// ✅ EMAIL
+export const validateEmail = (
+  email: string,
+  t: (key: string) => string
+): ValidationResult => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
+  if (!emailRegex.test(email)) {
+    return { valid: false, messages: { emailError: t("validation.emailInvalid") } };
+  }
+  return { valid: true };
 };
 
-// ✅ Validación de nombres (firstName y lastName)
-export const validateName = (form: UserType) => {
-  const errors: { firstName?: string; lastName?: string } = {};
+// ✅ NAME (firstName + lastName)
+export const validateName = (
+  form: UserType,
+  t: (key: string) => string
+): ValidationResult => {
+  let errorMessage = "";
 
-  if (!form.firstName || form.firstName.trim().length < 3) {
-    errors.firstName = 'First name must be at least 3 characters';
+  if (!form.firstName || form.firstName.trim().length < 3 ||
+  !form.lastName || form.lastName.trim().length < 3) {
+    errorMessage = t("validation.firstNameMin");
   }
 
-  if (!form.lastName || form.lastName.trim().length < 3) {
-    errors.lastName = 'Last name must be at least 3 characters';
-  }
-
-  if (Object.keys(errors).length > 0) {
-    return { error: true, messages: errors };
-  }
-
-  return { error: false };
+  return errorMessage
+    ? { valid: false, messages: { namesError: errorMessage } }
+    : { valid: true };
 };
 
-// ✅ Validación de password y confirmación
+// ✅ USERNAME
+export const validateUsername = (
+  form: UserType,
+  t: (key: string) => string
+): ValidationResult => {
+  const username = form.username?.trim();
+  if (!username || username.length < 3 || username.length > 20) {
+    return { valid: false, messages: { usernameError: t("validation.usernameLength") } };
+  }
+  return { valid: true };
+};
+
+// ✅ PASSWORD
 export const validatePassword = (
   password: string,
-  passwordConfirm: string
-): PasswordValidationResult => {
+  passwordConfirm: string,
+  t: (key: string) => string
+): ValidationResult => {
+  let errorMessage = "";
+
   if (password !== passwordConfirm) {
-    return { valid: false, message: 'Passwords do not match' };
+    errorMessage = t("validation.passwordMismatch");
   }
 
   const regex =
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
   if (!regex.test(password)) {
-    return {
-      valid: false,
-      message:
-        'Password must have min 8 chars, uppercase, lowercase, number and special character',
-    };
+    errorMessage = errorMessage
+      ? `${errorMessage} ${t("validation.passwordWeak")}`
+      : t("validation.passwordWeak");
   }
 
-  return { valid: true, message: 'Valid password' };
+  return errorMessage
+    ? { valid: false, messages: { passwordError: errorMessage } }
+    : { valid: true };
 };
 
-// ✅ Validación de username
-export const validateUsername = (form: UserType) => {
-  const errors: { username?: string } = {};
-  const username = form.username?.trim();
-
-  if (!username || username.length < 3 || username.length > 20) {
-    errors.username = 'Username must be 3–20 characters long';
+// ✅ GENDER
+export const validateGender = (
+  gender: string,
+  t: (key: string) => string
+): ValidationResult => {
+  if (!gender) {
+    return { valid: false, messages: { genderError: t("validation.genderRequired") } };
   }
-
-  if (Object.keys(errors).length > 0) {
-    return { error: true, messages: errors };
-  }
-
-  return { error: false };
+  return { valid: true };
 };

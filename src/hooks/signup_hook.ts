@@ -1,4 +1,3 @@
-// hooks/useSignupForm.ts
 import { useState } from "react";
 import { UserType } from "@/types/signup/user_type";
 import {
@@ -6,53 +5,90 @@ import {
   validatePassword,
   validateUsername,
   validateName,
+  validateGender,
 } from "@/utils/validation";
 
-export function signupHook(initialState: UserType) {
-  const [form, setForm] = useState(initialState);
-  const [passwordConfirm, setPasswordConfirm] = useState("");
-  const [errors, setErrors] = useState<Record<string, string | null>>({});
+// ✅ Tipo de errores para un registro de campo -> mensaje
+export type SignupErrors = Record<string, string | null>;
 
+/**
+ * Hook de registro con validación y soporte multilenguaje
+ */
+export function signupHook(initialState: UserType, t: (key: string) => string) {
+  const [form, setForm] = useState<UserType>(initialState);
+  const [passwordConfirm, setPasswordConfirm] = useState<string>("");
+  const [errors, setErrors] = useState<SignupErrors>({});
+
+  /** 🔹 Setea un error individual */
+  const setErrorField = (field: string, message: string | null) => {
+    setErrors(prev => ({
+      ...prev,
+      [field]: message,
+    }));
+  };
+
+  /** 🔹 Actualiza los valores del formulario y limpia errores del campo */
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
     setForm(prev => ({ ...prev, [name]: value }));
+    // Limpia error del campo modificado
+    setErrors(prev => ({ ...prev, [name]: null }));
   };
 
+  /** 🔹 Actualiza email y autocompleta username */
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const emailValue = e.target.value;
     const usernameValue = emailValue.split("@")[0].trim();
     setForm(prev => ({ ...prev, email: emailValue, username: usernameValue }));
+    // Limpia errores asociados
+    setErrors(prev => ({
+      ...prev,
+      email: null,
+      username: null,
+    }));
   };
 
+  /** 🔹 Validación global del formulario */
   const validate = (): boolean => {
-    let newErrors: Record<string, string> = {};
+    setErrors({});
+    let newErrors: SignupErrors = {};
 
-    const nameErrors = validateName(form);
-    if (nameErrors.error && nameErrors.messages) {
-      newErrors.namesError = Object.values(nameErrors.messages).join("\n");
+    // 🧩 Nombre y Apellido
+    const nameResult = validateName(form, t);
+    if (!nameResult.valid && nameResult.messages) {
+      newErrors = { ...newErrors, ...nameResult.messages };
     }
 
-    const usernameErrors = validateUsername(form);
-    if (usernameErrors.error && usernameErrors.messages) {
-      newErrors.usernameError = Object.values(usernameErrors.messages).join("\n");
+    // 🧩 Username
+    const usernameResult = validateUsername(form, t);
+    if (!usernameResult.valid && usernameResult.messages) {
+      newErrors = { ...newErrors, ...usernameResult.messages };
     }
 
-    if (!validateEmail(form.email)) {
-      newErrors.emailError = "Email inválido";
+    // 🧩 Email
+    const emailResult = validateEmail(form.email, t);
+    if (!emailResult.valid && emailResult.messages) {
+      newErrors = { ...newErrors, ...emailResult.messages };
     }
 
-    if (!form.gender) {
-      newErrors.genderError = "Seleccione un género";
+    // 🧩 Género
+    const genderResult = validateGender(form.gender, t);
+    if (!genderResult.valid && genderResult.messages) {
+      newErrors = { ...newErrors, ...genderResult.messages };
     }
 
-    const passValidation = validatePassword(form.password, passwordConfirm);
-    if (!passValidation.valid) {
-      newErrors.passwordError = passValidation.message;
+    // 🧩 Contraseña
+    const passwordResult = validatePassword(form.password, passwordConfirm, t);
+    if (!passwordResult.valid && passwordResult.messages) {
+      newErrors = { ...newErrors, ...passwordResult.messages };
     }
 
-    setErrors(newErrors);
+    // 🔧 Actualiza el estado de errores
+    setErrors({ ...newErrors });
+
+    // ✅ Devuelve true si no hay errores
     return Object.keys(newErrors).length === 0;
   };
 
@@ -65,6 +101,7 @@ export function signupHook(initialState: UserType) {
     setPasswordConfirm,
     errors,
     setErrors,
+    setErrorField,
     validate,
   };
 }
