@@ -1,10 +1,10 @@
-'use client';
+//'use client';
 
 import Link from 'next/link';
 import { useLanguage } from 'buddybets-i18n-lib';
 
 export default function Navbar() {
-  const { currentLanguage, changeLanguage, t } = useLanguage();
+  const { t, currentLanguage, changeLanguage } = useLanguage();
 
   return (
     <nav style={{ padding: '10px', borderBottom: '1px solid #ccc', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -15,7 +15,8 @@ export default function Navbar() {
           <Link href="/hello" style={{ marginRight: '10px' }}>Iniciar sesión</Link>
           <Link href="/signup" style={{ marginRight: '10px' }}>Registrar</Link>
       </div>
-      {/* Selector de idioma */}
+
+      {/* Selector de idioma */
       <select
         value={currentLanguage}
         onChange={(e) => changeLanguage(e.target.value as any)}
@@ -25,7 +26,7 @@ export default function Navbar() {
           <option value="es">Español</option>
           <option value="pt">Português</option>
           <option value="fr">Français</option>
-      </select>
+      </select>}
     </nav>
   );
 }

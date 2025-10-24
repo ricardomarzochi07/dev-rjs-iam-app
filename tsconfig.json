@@ -1,32 +1,42 @@
 {
   "compilerOptions": {
+    "target": "ES2020",
     "lib": [
-      "dom",
-      "dom.iterable",
-      "esnext"
+      "DOM",
+      "ES2020"
     ],
-    "allowJs": true,
-    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "jsx": "preserve", // ✅ necessário para evitar erro de jsx-dev-runtime
     "strict": true,
-    "noEmit": true,
     "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
+    "noEmit": true, // Next.js cuida da build
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".", // base para caminhos absolutos
     "paths": {
       "@/*": [
-        "./src/*"
+        "src/*"
       ]
-    }
+    },
+    "types": [
+      "node",
+      "react",
+      "react-dom"
+    ], // ✅ para autocomplete correto e JSX
+    "skipLibCheck": true // evita erro de verificação em libs externas
+    ,
+    "allowJs": true,
+    "incremental": true,
+    "isolatedModules": true
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+
 }

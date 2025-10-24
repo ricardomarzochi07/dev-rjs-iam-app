@@ -109,9 +109,10 @@
 
 .errorMessage {
   color: red;
-  font-size: 0.70rem;
+  font-size: 0.75rem;
   margin: 2px;
   font-weight: 600;
+  font-family: 'Poppins', sans-serif;
 }
 
 .errorWrapper {
@@ -180,6 +181,26 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.1);
+  background: rgba(158, 151, 151, 0.4); /* un poco más oscuro */
   display: flex;
+  align-items: center;      /* centra verticalmente */
+  justify-content: center;  /* centra horizontalmente */
+  flex-direction: column;   /* coloca texto debajo del spinner */
+  z-index: 9999;            /* asegura que quede encima */
+}
+
+.spinner {
+  width: 60px;
+  height: 60px;
+  border: 6px solid #f3f3f3;       /* gris claro */
+  border-top: 6px solid #3498db;   /* color visible (azul) */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;             /* espacio con el texto */
+}
+
+/* Animación */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

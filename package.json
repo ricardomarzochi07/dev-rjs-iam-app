@@ -3,32 +3,41 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "cross-env NEXT_PRIVATE_LOCAL_WEBPACK=true next dev -p 3002",
-    "build": "cross-env NEXT_PRIVATE_LOCAL_WEBPACK=true next build",
-    "start": "cross-env NEXT_PRIVATE_LOCAL_WEBPACK=true next start -p 3002"
+    "dev": "cross-env NEXT_PRIVATE_LOCAL_WEBPACK=true next dev -p 3001",
+    "build": "cross-env NEXT_PRIVATE_LOCAL_WEBPACK=true next build"
   },
   "dependencies": {
-    "@module-federation/nextjs-mf": "8.8.34",
-    "buddybets-http-lib": "^1.0.0",
-    "buddybets-i18n-lib": "^1.0.13",
+    "@module-federation/nextjs-mf": "^8.8.44",
+    "buddybets-http-lib": "file:../dev-rjs-buddybets-libs/buddybets-http-lib/buddybets-http-lib-1.0.3.tgz",
+    "buddybets-i18n-lib": "file:../dev-rjs-buddybets-libs/buddybets-i18n-lib/buddybets-i18n-lib-1.0.25.tgz",
     "cookie": "^1.0.2",
     "http-status-codes": "^2.3.0",
-    "install": "^0.13.0",
+    "i18next": "^23.12.0",
     "js-cookie": "^3.0.5",
     "lodash": "4.17.21",
-    "next": "^14.1.4",
-    "npm": "^11.6.2",
+    "next": "14.2.33",
     "oidc-client-ts": "^3.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-google-recaptcha": "^3.1.0",
-    "react-icons": "^5.5.0",
-    "webpack": "5.101.0"
+    "react-i18next": "^13.5.0",
+    "react-icons": "^5.5.0"
   },
   "devDependencies": {
+    "@types/node": "^20.11.30",
     "@types/react": "^18.3.1",
-    "@types/react-dom": "^18.3.1",
+    "@types/react-dom": "^18.3.0",
     "@types/react-google-recaptcha": "^2.1.9",
-    "cross-env": "^10.1.0"
+    "cross-env": "^10.1.0",
+    "dotenv-cli": "^10.0.0",
+    "eslint": "^8.57.1",
+    "eslint-config-next": "14.2.33",
+    "typescript": "^5.4.5",
+    "webpack": "^5.102.1"
+  },
+  "exports": {
+    ".": "./index.js",
+    "./jsx-runtime": "./jsx-runtime.js",
+    "./jsx-dev-runtime": "./jsx-dev-runtime.js"
   }
 }
